@@ -45,14 +45,14 @@ order is still pending
   POST /alert?evtname=&count_threshold=&alert_url=  
 
   example: POST /alert?evtname=neworder&alert_Url=http://localhost/time_order_handler
-  {
-  	seller: 'ABC',  	
-  	tx_id: 1234,
-  	status: 'SUCCESS'
-  }
+  
+  [ 
+     { evtname: 'topup', seller: 'ABC', tx_id: 1234, status: 'SUCCESS'} 
+  ]
+  
   
   send(evtname,sender, params, ttl=1h)
   POST /events?evtname=&sender=&ttl=1h
-  body = {cid:, seller:, tx_id:, status:,}
+  body = { cid:, seller:, tx_id:, status:,}
   
 ```  
