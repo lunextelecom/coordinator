@@ -37,14 +37,13 @@ order is still pending
 
   /**
   setup a new alert.  some event might be send before this method is call, so always keep events.  
-  match_fields: the fields in the event that will be counted. eg. sender,tx_id
-  count_threshold: the count reach before firing alert_url
+  match_fields: array the fields in the event that will be counted. eg. sender,tx_id
   alert_url: the url to alert.  system will post to alert_url with { count:, evts: [],}
   **/
   alert(evtname, count_threshold=1, alert_url=null, match_fields)
-  POST /alert?evtname=&count_threshold=&alert_url=  
+  POST /alert?alertname=&alert_url=  
 
-  example: POST /alert?evtname=neworder&alert_Url=http://localhost/time_order_handler
+  example: POST /alert?alertname=neworder&alert_Url=http://localhost/time_order_handler
   
   [ 
      { evtname: 'topup', seller: 'ABC', tx_id: 1234, status: 'SUCCESS'} 
