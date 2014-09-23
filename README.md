@@ -40,7 +40,7 @@ order is still pending
   match_fields: array the fields in the event that will be counted. eg. sender,tx_id
   alert_url: the url to alert.  system will post to alert_url with { count:, evts: [],}
   **/
-  alert(evtname, count_threshold=1, alert_url=null, match_fields)
+  alert(evtname, alert_url=null, match_fields)
   POST /alert?alertname=&alert_url=  
 
   example: POST /alert?alertname=neworder&alert_Url=http://localhost/time_order_handler
