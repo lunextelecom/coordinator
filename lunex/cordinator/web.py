@@ -15,6 +15,8 @@ from lunex.bottle_extra.plugins import RequestLoggingPlugin
 from lunex.bottle_extra.plugins import ResponsePlugin
 from lunex.cordinator.service import make_alert, make_send
 from lunex.cordinator.utils import convert_querydict_to_dict
+from lunex.cordinator.common import CacheService
+from lunex.cordinator import settings
 
 
 app = bottle.Bottle()
@@ -46,7 +48,7 @@ def docs(path):
 def index():
     return {'Message': 'Coordinator (Cassandra) worked.'}
 
-#/alert/?alert_name={alert_name}&alert_url={alert_url}&timeuuid={timeuuid}&count_threshold={count_threshold}
+#/alert/?alert_name={alert_name}&alert_url={alert_url}
 @app.route('/alert/', method='POST')
 def alert():
     '''
@@ -54,8 +56,6 @@ def alert():
     
     :query string alert_name: Alert Name
     :query string alert_url: Alert Url
-    :query string timeuuid: Timeuuid
-    :query int count_threshold: Count Threshold
 
     **Example response**:
     
@@ -73,13 +73,12 @@ def alert():
     res = make_alert(params)
     return res
 
-#/send/?timeuuid={timeuuid}&event_name={event_name}&sender={sender}&ttl={ttl}
+#/send/?event_name={event_name}&sender={sender}&ttl={ttl}
 @app.route('/send/', method='POST')
 def send():
     '''
     Make external order
     
-    :query string timeuuid: Timeuuid
     :query string event_name: Event name
     :query string sender: Sender
     :query int ttl: Time to live
@@ -109,6 +108,14 @@ def init_server():
     1) redis
     2) sqlalchemy which can be dao.__init__()
     """
+    #CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
+    
+#     tung = CacheService.get('tungabc')
+#     if not tung:
+#         #query
+#         data = ''
+#         CacheService.setData('tungabc', data)
+    
     
     logger.info('init_server()')
 

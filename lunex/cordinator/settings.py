@@ -18,6 +18,10 @@ CASSANDRA_DATABASES = {
     },
 }
 
+CACHE_SERVER = {'Host': '10.9.9.61',
+                'Port': 6379
+                }
+
 import logging
 LOGGING_LEVEL = logging.DEBUG
 LOGGING_FILE = '/tmp/coordinator.log'

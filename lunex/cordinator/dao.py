@@ -22,12 +22,15 @@ AUTH = settings.CASSANDRA_DATABASES[DBKEY]['AUTH']
 def __init__():
     pass
 
-def _get_send(timeuuid, event_name, match_fields):
+def get_send_by_evtname(event_name):
+    pass
+
+def _get_send(uuid, event_name, match_fields):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
     
-    sql = ' select * from send where timeuuid=? and event_name=? and match_fields=? '
-    params = (timeuuid, event_name, match_fields)
+    sql = ' select * from send where id=? and event_name=? and match_fields=? '
+    params = (uuid, event_name, match_fields)
     
     prepared = session.prepare(sql) 
     prepared.consistency_level = ConsistencyLevel.LOCAL_QUORUM
@@ -38,16 +41,17 @@ def _get_send(timeuuid, event_name, match_fields):
     cluster.shutdown()
     return rows_send
 
-def _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, count_threshold, status):
+
+def _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, status):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
     query = '''
-            insert into alert(timeuuid, event_name, match_fields, alert_name, alert_url, count_threshold, status)
-            values (?, ?, ?, ?, ?, ?, ?);
+            insert into alert(id, event_name, match_fields, alert_name, alert_url, status)
+            values (?, ?, ?, ?, ?, ?);
             '''
     prepared = session.prepare(query)
     batch = BatchStatement()
-    batch.add(prepared, (uuid, event_name, match_fields, alert_name, alert_url, count_threshold, status))
+    batch.add(prepared, (uuid, event_name, match_fields, alert_name, alert_url, status))
     session.execute(batch)
     session.shutdown()
     cluster.shutdown()
@@ -55,7 +59,7 @@ def _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, count_t
 def _get_alert(uuid, event_name, match_fields):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
-    sql = ' select * from alert where timeuuid=? and event_name=? and match_fields=? '
+    sql = ' select * from alert where id=? and event_name=? and match_fields=? '
     params = (uuid, event_name, match_fields)
     
     prepared = session.prepare(sql) 
@@ -71,7 +75,7 @@ def _insert_send(uuid, event_name, match_fields, sender, ttl):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
     query = '''
-            insert into send(timeuuid, event_name, match_fields, sender, ttl)
+            insert into send(id, event_name, match_fields, sender, ttl)
             values (?, ?, ?, ?, ?);
             '''
     prepared = session.prepare(query)
@@ -85,7 +89,7 @@ def _insert_send(uuid, event_name, match_fields, sender, ttl):
 def _update_alert(status, uuid, event_name, match_fields):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
-    query = ' update alert set status=? where timeuuid=? and event_name=? and match_fields=? '
+    query = ' update alert set status=? where id=? and event_name=? and match_fields=?'
     prepared = session.prepare(query)
     batch = BatchStatement()
     batch.add(prepared, (status, uuid, event_name, match_fields))
@@ -97,8 +101,8 @@ def _update_alert(status, uuid, event_name, match_fields):
 def _get_list_alert_by_timeuuid(timeuuid):
     cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
     session = cluster.connect(CASSANDRA_KEYSPACE)
-    sql = ' select * from alert where timeuuid=? '
-    params = (timeuuid)
+    sql = ' select * from alert where id=? '
+    params = (timeuuid,)
     
     prepared = session.prepare(sql) 
     prepared.consistency_level = ConsistencyLevel.LOCAL_QUORUM
@@ -108,3 +112,27 @@ def _get_list_alert_by_timeuuid(timeuuid):
     session.shutdown()
     cluster.shutdown()
     return rows_alert
+
+def _delete_alert_by_id(uuid):
+    cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
+    session = cluster.connect(CASSANDRA_KEYSPACE)
+    query = ' delete from alert where id=?'
+    prepared = session.prepare(query)
+    batch = BatchStatement()
+    batch.add(prepared, (uuid,))
+    session.execute(batch)
+    
+    session.shutdown()
+    cluster.shutdown()
+    
+def _delete_send_by_id(uuid):
+    cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
+    session = cluster.connect(CASSANDRA_KEYSPACE)
+    query = ' delete from send where id=?'
+    prepared = session.prepare(query)
+    batch = BatchStatement()
+    batch.add(prepared, (uuid,))
+    session.execute(batch)
+    
+    session.shutdown()
+    cluster.shutdown()
