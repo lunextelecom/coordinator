@@ -182,7 +182,7 @@ def do_make_send(param):
                         RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
                         
                         #delete send in cassandra
-                        _delete_alert_by_id(uuid)
+                        _delete_send_by_id(uuid)
     except Exception, ex:
         logger.exception(ex)
         
