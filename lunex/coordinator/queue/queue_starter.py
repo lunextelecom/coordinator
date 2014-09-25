@@ -10,7 +10,7 @@ from lunex.coordinator.queue.queue_utils import QueueUtils
 
 logger = logging.getLogger('coordinator')
 # hdlr = logging.FileHandler('D:/file_log.log')
-hdlr = logging.FileHandler('/usr/local/lib/lunex-apps/coordinator/file_log.log')
+hdlr = logging.FileHandler('/usr/local/lib/lunex-apps/coordinator/tmp/file_log.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
