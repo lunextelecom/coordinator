@@ -4,6 +4,7 @@ Created on Aug 18, 2013
 @author: KhoaTran
 '''
 import exceptions
+import json
 import logging
 import re
 from uuid import UUID, uuid1
@@ -14,8 +15,7 @@ import simplejson
 from lunex.coordinator.common.CacheService import RedisCache
 from lunex.coordinator.dao import _insert_alert, _insert_send, \
     _update_alert, _delete_alert_by_id, \
-    _delete_send_by_id, _get_list_alert_by_timeuuid, _test_insert_alert_name, \
-    _get_data_call_back
+    _delete_send_by_id, _test_insert_alert_name
 from lunex.coordinator.models import AlertStatus
 from lunex.coordinator.queue.queue_utils import QueueUtils
 
@@ -35,8 +35,6 @@ def do_make_alert(param):
         body_param = param.get('body', '')
         result = {}
         count = 0
-        #insert to test table
-        _test_insert_alert_name(alert_name, alert_url, simplejson.dumps(body_param))
         for item in body_param:
             data = {}
             data['id'] = uuid.__str__()
@@ -60,7 +58,7 @@ def do_make_alert(param):
                 for key in list_key:
                     send = RedisCache.get_data(key)
                     send_match_fields = send['match_fields']
-                    flagItem = compare_tow_match_fields(simplejson.loads(send_match_fields), simplejson.loads(match_fields))
+                    flagItem = compare_two_match_fields(simplejson.loads(send_match_fields), simplejson.loads(match_fields))
                     if flagItem == True:
                         match_key = key
                         flagAll = True
@@ -93,13 +91,13 @@ def do_make_alert(param):
         RedisCache.set_data(RedisCache.ALERT + uuid.__str__(), result)
         
         if count == len(body_param):
+            #fire alert_url
+            fire_alert_url(alert_name, alert_url, count, body_param)
+            
             #delete alert in redis cache
             keys_delete = RedisCache.get_keys_begin_with(uuid.__str__())
             for key in keys_delete:
                 RedisCache.delete_by_key(key)
-            
-            #fire alert_url
-            fire_alert_url(uuid)
             
             #delete alert in cassandra
             _delete_alert_by_id(uuid)
@@ -149,7 +147,7 @@ def do_make_send(param):
             for key in list_key:
                 alert = RedisCache.get_data(key)
                 alert_match_fields = alert['match_fields']
-                flagItem = compare_tow_match_fields(simplejson.loads(match_fields), alert_match_fields)
+                flagItem = compare_two_match_fields(simplejson.loads(match_fields), alert_match_fields)
                 if flagItem == True:
                     match_key = key
                     flagAll = True
@@ -170,14 +168,24 @@ def do_make_send(param):
                         alert['count'] = count
                         RedisCache.set_data(RedisCache.ALERT + id_alert, alert)
                         if count == int(alert['total']):
+                            alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
+                            alert_name = alert['alert_name']
+                            alert_url = alert['alert_url']
+                            RedisCache.delete_by_key(RedisCache.ALERT + id_alert)
+                            
                             #id_alert
                             #delete alert in redis cache
                             keys_delete = RedisCache.get_keys_begin_with(id_alert)
+                            list_event = []
                             for key in keys_delete:
+                                alert = RedisCache.get_data(key)
+                                data = alert['match_fields']
+                                data['evtname'] = alert['event_name']
+                                list_event.append(data)
                                 RedisCache.delete_by_key(key)
-                                
+                            
                             #fire alert_url
-                            fire_alert_url(UUID(id_alert))
+                            fire_alert_url(alert_name, alert_url, count, list_event)
                             
                             #delete alert in cassandra
                             _delete_alert_by_id(UUID(id_alert))
@@ -205,24 +213,16 @@ def make_send(param):
     return {"HasError": False, "Code": 0, "Message": ""}
 
 #check to fire alert url in Redis
-def fire_alert_url (uuid):
+def fire_alert_url (alert_name, alert_url, count, body_param):
     try:
-        alerts = _get_list_alert_by_timeuuid(uuid)
-        if alerts:
-            list_event = []
-            for alert in alerts:
-                event = simplejson.loads(alert[2])
-                event['evtname'] = alert[1]
-                list_event.append(event)
-            url = alerts[0][4]
-            params = {"count": len(alerts), "evts": list_event}
-            res = requests.post(url, params=params)
-            return res
+        params = {"alert_name":alert_name, "count": count, "evts": body_param}
+        headers = {'Content-Type': 'application/json'}
+        res = requests.post(alert_url, data=json.dumps(params), headers=headers)
+        return res
     except Exception, ex:
         pass
-    
 
-def compare_tow_match_fields(send_match_fields, alert_match_fields):
+def compare_two_match_fields(send_match_fields, alert_match_fields):
     flagItem = False
     for key in alert_match_fields:
         if key in send_match_fields.keys():
@@ -255,17 +255,9 @@ def compare_tow_match_fields(send_match_fields, alert_match_fields):
 
 def call_back(params):
     try:
-        alert_name = params.get('name', '')
-        alerts = _get_data_call_back(alert_name)
-        result=[]
-        for alert in alerts:
-            data = {}
-            data['alert_name'] = alert[0]
-            data['content'] = alert[1]
-            data['alert_url'] = alert[2]
-            data['date'] = alert[3]
-            result.append(data)
-            
-        return result
+        alert_name = params.get('alert_name', '')
+        content = params.get('evts', '')
+        _test_insert_alert_name(alert_name, simplejson.dumps(content))
+        return {"HasError": False, "Code": 0, "Message": ""}
     except Exception, ex:
-        return {"Error": True}
+        return {"HasError": True, "Code": 0, "Message": ""}

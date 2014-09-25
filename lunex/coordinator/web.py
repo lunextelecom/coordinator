@@ -99,8 +99,8 @@ def send():
 
 @app.route('/alert-callback/', method='POST')
 def call_back_alert():
-    params = convert_querydict_to_dict(bottle.request.GET)
-    res = call_back(params)
+    data = bottle.request.json
+    res = call_back(data)
     return res
 
 def init_server():
