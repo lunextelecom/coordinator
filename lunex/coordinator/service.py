@@ -238,8 +238,8 @@ def fire_alert_url (alert_name, alert_url, count, body_param):
         headers = {'Content-Type': 'application/json'}
         res = requests.post(alert_url, data=json.dumps(params), headers=headers)
         return res
-    except Exception, ex:
-        pass
+    except Exception:
+        logger.error('fire alert_url error')
 
 def compare_two_match_fields(send_match_fields, alert_match_fields):
     flagItem = False
