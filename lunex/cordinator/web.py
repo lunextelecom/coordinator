@@ -15,8 +15,6 @@ from lunex.bottle_extra.plugins import RequestLoggingPlugin
 from lunex.bottle_extra.plugins import ResponsePlugin
 from lunex.cordinator.service import make_alert, make_send
 from lunex.cordinator.utils import convert_querydict_to_dict
-from lunex.cordinator.common import CacheService
-from lunex.cordinator import settings
 
 
 app = bottle.Bottle()
@@ -52,7 +50,7 @@ def index():
 @app.route('/alert/', method='POST')
 def alert():
     '''
-    Make external order
+    Make alert of mainservice
     
     :query string alert_name: Alert Name
     :query string alert_url: Alert Url
@@ -77,7 +75,7 @@ def alert():
 @app.route('/send/', method='POST')
 def send():
     '''
-    Make external order
+    Make send of subsystem
     
     :query string event_name: Event name
     :query string sender: Sender
@@ -106,17 +104,7 @@ def init_server():
     """
     for this project
     1) redis
-    2) sqlalchemy which can be dao.__init__()
     """
-    #CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
-    
-#     tung = CacheService.get('tungabc')
-#     if not tung:
-#         #query
-#         data = ''
-#         CacheService.setData('tungabc', data)
-    
-    
     logger.info('init_server()')
 
 init_server()
