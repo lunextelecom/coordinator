@@ -13,8 +13,8 @@ from gevent.pywsgi import WSGIServer
 from lunex.bottle_extra.plugins import ExceptionPlugin
 from lunex.bottle_extra.plugins import RequestLoggingPlugin
 from lunex.bottle_extra.plugins import ResponsePlugin
-from lunex.cordinator.service import make_alert, make_send
-from lunex.cordinator.utils import convert_querydict_to_dict
+from lunex.coordinator.service import make_alert, make_send, call_back
+from lunex.coordinator.utils import convert_querydict_to_dict
 
 
 app = bottle.Bottle()
@@ -95,6 +95,12 @@ def send():
     body_param = bottle.request.json
     params['body'] = body_param
     res = make_send(params)
+    return res
+
+@app.route('/alert-callback/', method='POST')
+def call_back_alert():
+    params = convert_querydict_to_dict(bottle.request.GET)
+    res = call_back(params)
     return res
 
 def init_server():

@@ -3,13 +3,14 @@ Created on Aug 13, 2013
 
 @author: KhoaTran
 '''
+import datetime
 import logging
 
 from cassandra import ConsistencyLevel
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement
 
-from lunex.cordinator import settings
+from lunex.coordinator import settings
 
 
 logger = logging.getLogger('dao')
@@ -132,6 +133,21 @@ def _delete_send_by_id(uuid):
     prepared = session.prepare(query)
     batch = BatchStatement()
     batch.add(prepared, (uuid,))
+    session.execute(batch)
+    
+    session.shutdown()
+    cluster.shutdown()
+    
+def _test_insert_alert_name(alert_name, alert_url, content):
+    cluster = Cluster(CASSANDRA_SERVER, control_connection_timeout=CASSANDRA_TIMEOUT, auth_provider=AUTH)
+    session = cluster.connect(CASSANDRA_KEYSPACE)
+    query = '''
+            insert into alert_name(alert_name, content, alert_url, create_date)
+            values (?, ?, ?, ?);
+            '''
+    prepared = session.prepare(query)
+    batch = BatchStatement()
+    batch.add(prepared, (alert_name, content, alert_url, datetime.datetime.now()))
     session.execute(batch)
     
     session.shutdown()

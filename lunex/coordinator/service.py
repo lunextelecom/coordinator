@@ -6,18 +6,17 @@ Created on Aug 18, 2013
 import exceptions
 import logging
 import re
-import requests
 from uuid import UUID, uuid1
 
+import requests
 import simplejson
 
-from lunex.cordinator.common.CacheService import RedisCache
-from lunex.cordinator.dao import _insert_alert, _insert_send, \
+from lunex.coordinator.common.CacheService import RedisCache
+from lunex.coordinator.dao import _insert_alert, _insert_send, \
     _update_alert, _delete_alert_by_id, \
-    _delete_send_by_id, _get_list_alert_by_timeuuid
-from lunex.cordinator.models import AlertStatus
-from lunex.cordinator.queue.queue_utils import QueueUtils
-
+    _delete_send_by_id, _get_list_alert_by_timeuuid, _test_insert_alert_name
+from lunex.coordinator.models import AlertStatus
+from lunex.coordinator.queue.queue_utils import QueueUtils
 
 
 logger = logging.getLogger('services')
@@ -35,6 +34,8 @@ def do_make_alert(param):
         body_param = param.get('body', '')
         result = {}
         count = 0
+        #insert to test table
+        #_test_insert_alert_name(alert_name, alert_url, simplejson.dumps(body_param))
         for item in body_param:
             data = {}
             data['id'] = uuid.__str__()
@@ -250,3 +251,8 @@ def compare_tow_match_fields(send_match_fields, alert_match_fields):
             flagItem = False
             break
     return flagItem
+
+def call_back(params):
+    alert_name = params.get('name', '')
+    return []
+    pass

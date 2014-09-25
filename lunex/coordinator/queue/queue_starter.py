@@ -3,9 +3,9 @@ import logging
 
 import simplejson
 
-from lunex.cordinator import service, settings
-from lunex.cordinator.common import CacheService
-from lunex.cordinator.queue.queue_utils import QueueUtils
+from lunex.coordinator import service, settings
+from lunex.coordinator.common import CacheService
+from lunex.coordinator.queue.queue_utils import QueueUtils
 
 
 logger = logging.getLogger('coordinator')
