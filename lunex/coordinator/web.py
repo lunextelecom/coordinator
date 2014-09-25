@@ -5,7 +5,6 @@ Created on Aug 13, 2013
 '''
 
 import logging
-import os
 
 import bottle
 from gevent.pywsgi import WSGIServer
@@ -23,24 +22,7 @@ app.install(ExceptionPlugin())
 app.install(RequestLoggingPlugin())
 #app.install(StatPlugin(settings.url_event))
 
-logger = logging.getLogger('web')
-
-# ===== Start API docs =====
-basedir = os.path.dirname(os.path.abspath(os.path.realpath(__file__)));
-doc_path = os.path.normpath(os.path.join(basedir,'../../doc/build/html'))
-static_path = os.path.normpath(os.path.join(basedir,'../../doc/build/html/_static'))
-bottle.TEMPLATE_PATH = [doc_path,]
-
-@app.route('/docs/')
-@bottle.view('http-routingtable.html')
-def docs_home():
-    return {}
-
-@app.route('/docs/:path#.+#', name='docs')
-def docs(path):
-    return bottle.static_file(path, root=doc_path)
-
-# ===== End API docs =====
+logger = logging.getLogger('coordinator')
 
 @app.route('/')
 def index():
@@ -65,6 +47,7 @@ def alert():
             "Message": ""
         }
     '''    
+    logger.debug("a new alert come")
     params = convert_querydict_to_dict(bottle.request.GET)
     body_param = bottle.request.json
     params['body'] = body_param
@@ -91,6 +74,7 @@ def send():
             "Message": ""
         }
     '''    
+    logger.debug("a new send come")
     params = convert_querydict_to_dict(bottle.request.GET)
     body_param = bottle.request.json
     params['body'] = body_param
