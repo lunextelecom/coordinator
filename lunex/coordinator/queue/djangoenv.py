@@ -13,7 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'lunex.coordinator.admin.settings'
 
 #server
 sys.path.append('/usr/local/lib/lunex-apps/common/src')
-sys.path.append('/usr/local/lib/lunex-apps/coordinator/src')
+sys.path.append('/usr/local/lib/lunex-apps/coordinator/src/lunex/coordinator')
 sys.path.append('/usr/local/lib/lunex-apps/coordinator/libs/bottle_extra')
 sys.path.append('/usr/local/lib/lunex-apps/coordinator/libs/cache_utils')
 sys.path.append('/usr/local/lib/lunex-apps/coordinator/libs/utilities')
