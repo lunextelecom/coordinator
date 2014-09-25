@@ -127,6 +127,7 @@ def do_make_send(param):
         #insert to cassandra
         _insert_send(uuid, event_name, match_fields, sender, int(ttl))
         
+        logger.debug("insert send complete")
         #add to cache
         result = {}
         result['id'] = uuid.__str__()
