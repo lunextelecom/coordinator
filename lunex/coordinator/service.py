@@ -20,7 +20,7 @@ from lunex.coordinator.models import AlertStatus
 from lunex.coordinator.queue.queue_utils import QueueUtils
 
 
-logger = logging.getLogger('services')
+logger = logging.getLogger('coordinator')
 queue_util = QueueUtils()
 
 def __init__():
@@ -136,8 +136,12 @@ def do_make_send(param):
         if not data:
             if ttl:
                 RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
+                logger.info('cache send with timeout')
             else:
                 RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
+                logger.info('cache send no time out')
+        else:
+            logger.info('da ton tai')
         
         #get all send with endwith event_name from cache
         list_key = RedisCache.get_keys(RedisCache.ALERT + event_name)
@@ -260,4 +264,5 @@ def call_back(params):
         _test_insert_alert_name(alert_name, simplejson.dumps(content))
         return {"HasError": False, "Code": 0, "Message": ""}
     except Exception, ex:
+        logger.exception(ex)
         return {"HasError": True, "Code": 0, "Message": ""}
