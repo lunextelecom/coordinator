@@ -1,6 +1,6 @@
 from decimal import Decimal
 import logging
-
+import djangoenv
 import simplejson
 
 from lunex.coordinator import service, settings
