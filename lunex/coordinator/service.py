@@ -107,6 +107,18 @@ def do_make_alert(param):
         logger.exception(ex)
 
 def make_alert(param):
+    body_param = param.get('body', '')
+    if not body_param:
+        raise exceptions.ParameterRequired(field_name='match_fields')
+    
+    alert_name = param.get('alert_name', '')
+    if not alert_name:
+        raise exceptions.ParameterRequired(field_name='alert_name')
+    
+    alert_url = param.get('alert_url', '')
+    if not alert_url:
+        raise exceptions.ParameterRequired(field_name='alert_url')
+    
     param['type'] = 'alert'
     #push into queue
     queue_util.put_into_queue(QueueUtils.ALERT_SERVICE, param)
