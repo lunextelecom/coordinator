@@ -4,15 +4,27 @@ Created on Aug 13, 2013
 @author: KhoaTran
 '''
 CASSANDRA_DATABASES = {
-   'default': {
+#    'default': {
+#         'KEYSPACE': 'coordinator' ,        
+#         'SERVERS': ['127.0.0.1'],
+#         'AUTH': None, #{'username':'', 'password':''}
+#         'TIMEOUT': 10
+#     },
+#     'coordinator': {
+#         'KEYSPACE': 'coordinator' ,        
+#         'SERVERS': ['127.0.0.1'],
+#         'AUTH': None, #{'username':'', 'password':''}
+#         'TIMEOUT': 10
+#     },
+    'default': {
         'KEYSPACE': 'coordinator' ,        
-        'SERVERS': ['127.0.0.1'],
+        'SERVERS': ['192.168.93.38'],
         'AUTH': None, #{'username':'', 'password':''}
         'TIMEOUT': 10
     },
     'coordinator': {
         'KEYSPACE': 'coordinator' ,        
-        'SERVERS': ['127.0.0.1'],
+        'SERVERS': ['192.168.93.38'],
         'AUTH': None, #{'username':'', 'password':''}
         'TIMEOUT': 10
     },
