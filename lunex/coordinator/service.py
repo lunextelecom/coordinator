@@ -14,7 +14,8 @@ import simplejson
 from lunex.coordinator.common.CacheService import RedisCache
 from lunex.coordinator.dao import _insert_alert, _insert_send, \
     _update_alert, _delete_alert_by_id, \
-    _delete_send_by_id, _get_list_alert_by_timeuuid, _test_insert_alert_name
+    _delete_send_by_id, _get_list_alert_by_timeuuid, _test_insert_alert_name, \
+    _get_data_call_back
 from lunex.coordinator.models import AlertStatus
 from lunex.coordinator.queue.queue_utils import QueueUtils
 
@@ -35,7 +36,7 @@ def do_make_alert(param):
         result = {}
         count = 0
         #insert to test table
-        #_test_insert_alert_name(alert_name, alert_url, simplejson.dumps(body_param))
+        _test_insert_alert_name(alert_name, alert_url, simplejson.dumps(body_param))
         for item in body_param:
             data = {}
             data['id'] = uuid.__str__()
@@ -253,6 +254,18 @@ def compare_tow_match_fields(send_match_fields, alert_match_fields):
     return flagItem
 
 def call_back(params):
-    alert_name = params.get('name', '')
-    return []
-    pass
+    try:
+        alert_name = params.get('name', '')
+        alerts = _get_data_call_back(alert_name)
+        result=[]
+        for alert in alerts:
+            data = {}
+            data['alert_name'] = alert[0]
+            data['content'] = alert[1]
+            data['alert_url'] = alert[2]
+            data['date'] = alert[3]
+            result.append(data)
+            
+        return result
+    except Exception, ex:
+        return {"Error": True}
