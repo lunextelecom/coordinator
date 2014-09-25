@@ -122,7 +122,7 @@ def make_alert(param):
     param['type'] = 'alert'
     #push into queue
     queue_util.put_into_queue(QueueUtils.ALERT_SERVICE, param)
-    
+    logger.debug("put new alert to queue")
     #return 'success'
     return {"HasError": False, "Code": 0, "Message": ""}
 
@@ -227,7 +227,7 @@ def make_send(param):
     #push into queue
     param['type'] = 'send'
     queue_util.put_into_queue(QueueUtils.ALERT_SERVICE, param)
-    
+    logger.debug("put new send to queue")
     #return 'success'
     return {"HasError": False, "Code": 0, "Message": ""}
 
