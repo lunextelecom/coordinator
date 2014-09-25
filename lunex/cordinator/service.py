@@ -227,7 +227,7 @@ def compare_tow_match_fields(send_match_fields, alert_match_fields):
             alert_value = alert_match_fields[key]
             send_value = send_match_fields[key]
             if isinstance(alert_value, basestring):
-                if alert_value.startswith('Regex'):
+                if alert_value.lower().startswith('regex'):
                     matched = re.match(alert_value[6:len(alert_value)-1], send_value)
                     if matched:
                         flagItem = True
