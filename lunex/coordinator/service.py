@@ -91,6 +91,7 @@ def do_make_alert(param):
         RedisCache.set_data(RedisCache.ALERT + uuid.__str__(), result)
         
         if count == len(body_param):
+            logger.debug("fire url when recived alert")
             #fire alert_url
             fire_alert_url(alert_name, alert_url, count, body_param)
             
@@ -173,6 +174,7 @@ def do_make_send(param):
                         alert['count'] = count
                         RedisCache.set_data(RedisCache.ALERT + id_alert, alert)
                         if count == int(alert['total']):
+                            logger.debug("fire alert url when recieved send")
                             alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
                             alert_name = alert['alert_name']
                             alert_url = alert['alert_url']
@@ -229,6 +231,9 @@ def fire_alert_url (alert_name, alert_url, count, body_param):
 
 def compare_two_match_fields(send_match_fields, alert_match_fields):
     flagItem = False
+    if len(alert_match_fields.keys()) != len(send_match_fields.keys()):
+        return False
+    
     for key in alert_match_fields:
         if key in send_match_fields.keys():
             alert_value = alert_match_fields[key]
