@@ -53,6 +53,7 @@ def do_make_alert(param):
             if not list_key:
                 #insert to cassandra
                 _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.NOT_MATCH)
+                logger.debug("insert alert not match")
             else:
                 flagAll = False
                 for key in list_key:
@@ -67,6 +68,7 @@ def do_make_alert(param):
                 if flagAll == True:
                     #insert to cassandra
                     _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.MATCHED)
+                    logger.debug("insert alert matched")
                     count = count + 1
                     
                     send = RedisCache.get_data(match_key)
@@ -79,6 +81,7 @@ def do_make_alert(param):
                 else:
                     #insert to cassandra
                     _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.NOT_MATCH)
+                    logger.debug("insert alert not match")
                     
             #add alert to cache
             RedisCache.set_data(RedisCache.ALERT + event_name + ":" + uuid.__str__(), data)
