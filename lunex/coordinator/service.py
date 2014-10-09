@@ -110,6 +110,7 @@ def do_make_alert(param):
         logger.exception(ex)
 
 def make_alert(param):
+    logger.debug("into make alert")
     body_param = param.get('body', '')
     if not body_param:
         raise exceptions.ParameterRequired(field_name='match_fields')
@@ -222,6 +223,7 @@ def do_make_send(param):
         logger.exception(ex)
         
 def make_send(param):
+    logger.debug("into make send")
     body_param = param.get('body', '')
     if not body_param:
         raise exceptions.ParameterRequired(field_name='match_fields')
