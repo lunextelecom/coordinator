@@ -142,10 +142,10 @@ def do_make_send(param):
         #insert into send
         match_fields = simplejson.dumps(body_param)
         #insert to cassandra
-        if ttl:
-            _insert_send(uuid, event_name, match_fields, sender, int(ttl))
-        else:
-            _insert_send(uuid, event_name, match_fields, sender, 0)
+#         if ttl:
+        _insert_send(uuid, event_name, match_fields, sender, int(ttl))
+#         else:
+#             _insert_send(uuid, event_name, match_fields, sender, 0)
         
         logger.debug("insert send complete")
         #add to cache
