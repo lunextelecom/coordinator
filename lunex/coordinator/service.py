@@ -234,7 +234,7 @@ def make_send(param):
     
     #push into queue
     param['type'] = 'send'
-    #queue_util.put_into_queue(QueueUtils.ALERT_SERVICE, param)
+    queue_util.put_into_queue(QueueUtils.ALERT_SERVICE, param)
     logger.debug("put new send to queue")
     #return 'success'
     return {"HasError": False, "Code": 0, "Message": ""}
