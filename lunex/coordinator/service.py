@@ -48,8 +48,6 @@ def do_make_alert(param):
                 alert_match_field = alert['match_fields']
                 flag_alert = compare_two_match_fields(simplejson.loads(match_fields), simplejson.loads(alert_match_field))
                 if flag_alert == True:
-                    match_key = key
-                    flagAll = True
                     break
         
         if flag_alert == False:
@@ -170,6 +168,8 @@ def do_make_send(param):
             send = RedisCache.get_data(key)
             send_match_field = send['match_fields']
             flag_send = compare_two_match_fields(simplejson.loads(match_fields), simplejson.loads(send_match_field))
+            if flag_send == True:
+                break;
         
         if flag_send == False:
             logger.debug('send not existed in sytem.')
