@@ -70,6 +70,7 @@ def do_make_alert(param):
                 if not list_key:
                     #insert to cassandra
                     _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.NOT_MATCH)
+                    data['status'] = AlertStatus.NOT_MATCH
                     logger.debug("insert alert not match")
                 else:
                     flagAll = False
@@ -85,6 +86,8 @@ def do_make_alert(param):
                     if flagAll == True:
                         #insert to cassandra
                         _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.MATCHED)
+                        data['status'] = AlertStatus.MATCHED
+                        
                         logger.debug("insert alert matched")
                         count = count + 1
                         
@@ -98,6 +101,7 @@ def do_make_alert(param):
                     else:
                         #insert to cassandra
                         _insert_alert(uuid, event_name, match_fields, alert_name, alert_url, AlertStatus.NOT_MATCH)
+                        data['status'] = AlertStatus.NOT_MATCH
                         logger.debug("insert alert not match")
                         
                 #add alert to cache
@@ -174,40 +178,46 @@ def do_make_send(param):
         if flag_send == False:
             logger.debug('send not existed in sytem.')
             
-            #insert to cassandra
-            _insert_send(uuid, event_name, match_fields, sender, int(ttl))
-            
-            logger.debug("insert send complete")
-            #add to cache
-            result = {}
-            result['id'] = uuid.__str__()
-            result['event_name'] = event_name
-            result['match_fields'] = match_fields
-            data = RedisCache.get_data(RedisCache.SEND + event_name + ":" + uuid.__str__())
-            if not data:
-                if ttl:
-                    RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
-                    logger.info('cache send with timeout')
-                else:
-                    RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
-                    logger.info('cache send no time out')
-            else:
-                logger.info('da ton tai')
-            
             #get all send with endwith event_name from cache
             list_key = RedisCache.get_keys(RedisCache.ALERT + event_name)
             
             if list_key:
                 flagAll = False
+                flagSendExistedMacth = False
                 for key in list_key:
                     alert = RedisCache.get_data(key)
                     alert_match_fields = alert['match_fields']
                     flagItem = compare_two_match_fields(simplejson.loads(match_fields), alert_match_fields)
                     if flagItem == True:
-                        match_key = key
-                        flagAll = True
+                        if int(alert['status']) == AlertStatus.NOT_MATCH:
+                            alert['status'] = AlertStatus.MATCHED
+                            RedisCache.set_data(key, alert)
+                            match_key = key
+                            flagAll = True
+                        else:
+                            flagAll = False
+                            flagSendExistedMacth = True
                         break
+                
+                if flagSendExistedMacth == False:
+                    #insert to cassandra
+                    _insert_send(uuid, event_name, match_fields, sender, int(ttl))
+                    logger.debug("insert send complete")
                     
+                    #add to cache
+                    result = {}
+                    result['id'] = uuid.__str__()
+                    result['event_name'] = event_name
+                    result['match_fields'] = match_fields
+                    data = RedisCache.get_data(RedisCache.SEND + event_name + ":" + uuid.__str__())
+                    if not data:
+                        if ttl:
+                            RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
+                            logger.info('cache send with timeout')
+                        else:
+                            RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
+                            logger.info('cache send no time out')
+                
                 #update status of alert
                 if flagAll == True:
                     #add count
@@ -249,6 +259,10 @@ def do_make_send(param):
                             
                             #delete send in cassandra
                             _delete_send_by_id(uuid)
+            else:
+                #insert to cassandra
+                _insert_send(uuid, event_name, match_fields, sender, int(ttl))
+                logger.debug("insert send complete")
         else:
             logger.debug('send already existed system')
             
