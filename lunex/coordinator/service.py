@@ -51,9 +51,17 @@ def do_make_alert(param):
 #                 if flag_alert == True:
 #                     break
         
+        for n,i in enumerate(body_param):
+            body_param[n] = simplejson.dumps(body_param[n])
+         
+        duplicate_list = set([x for x in body_param if body_param.count(x) > 1])
+        for item in duplicate_list:
+            body_param.remove(item)
+        
         #if flag_alert == False:
         logger.debug('alert not existed in sytem.')
         for item in body_param:
+            item = simplejson.loads(item)
             data = {}
             data['id'] = uuid.__str__()
             event_name = item['evtname']
@@ -342,10 +350,32 @@ def call_back(params):
 #             "evtname": "pap1",
 #             "txid": 1,
 #             "status": "SUCCESS"
+#         }, {
+#             "evtname": "pap3",
+#             "txid": 4,
+#             "status": "SUCCESS"
+#         }, {
+#             "evtname": "pap3",
+#             "txid": 4,
+#             "status": "SUCCESS"
+#         }, {
+#             "evtname": "pap6",
+#             "txid": 4,
+#             "status": "SUCCESS"
 #         }]
 #     
-#     set([x for x in l if l.count(x) > 1])
-    
+#     for n,i in enumerate(l):
+#         l[n] = simplejson.dumps(l[n])
+#      
+#     s = set([x for x in l if l.count(x) > 1])
+#     
+#     
+#     print s
+#     for item in s:
+#         l.remove(item)
+#     
+#     print l
+#
 #     from lunex.coordinator import settings
 #     CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
 #     list_send_key = RedisCache.get_keys('coor')
