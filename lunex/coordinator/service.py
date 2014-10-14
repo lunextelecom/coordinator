@@ -263,6 +263,20 @@ def do_make_send(param):
                 #insert to cassandra
                 _insert_send(uuid, event_name, match_fields, sender, int(ttl))
                 logger.debug("insert send complete")
+                
+                #add to cache
+                result = {}
+                result['id'] = uuid.__str__()
+                result['event_name'] = event_name
+                result['match_fields'] = match_fields
+                data = RedisCache.get_data(RedisCache.SEND + event_name + ":" + uuid.__str__())
+                if not data:
+                    if ttl:
+                        RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
+                        logger.info('cache send with timeout')
+                    else:
+                        RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
+                        logger.info('cache send no time out')
         else:
             logger.debug('send already existed system')
             
