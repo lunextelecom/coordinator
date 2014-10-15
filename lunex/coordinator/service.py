@@ -61,6 +61,8 @@ def do_make_alert(param):
         #if flag_alert == False:
         logger.debug('alert not existed in sytem.')
         index = 0
+        set_send_key_matched = set([])
+        set_send_id_matched = set([])
         for item in body_param:
             item = simplejson.loads(item)
             data = {}
@@ -104,10 +106,12 @@ def do_make_alert(param):
                     send = RedisCache.get_data(match_key)
                     send_id = send['id']
                     #delete in cache
-                    RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + send_id)
+                    #RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + send_id)
+                    set_send_key_matched.add(RedisCache.SEND + event_name + ":" + send_id)
                     
                     #delete send in cassandra
-                    _delete_send_by_id(UUID(send_id))
+                    #_delete_send_by_id(UUID(send_id))
+                    set_send_id_matched.add(send_id)
                     
             if flagAll == True:
                 count = count + 1
@@ -115,7 +119,13 @@ def do_make_alert(param):
             #add alert to cache
             RedisCache.set_data(RedisCache.ALERT + event_name + ":" + str(index) + ":" + uuid.__str__(), data)
             index = index + 1
+            
+        for item in set_send_key_matched:
+            RedisCache.delete_by_key(item)
         
+        for item in set_send_id_matched:
+            _delete_send_by_id(UUID(item))
+            
         #save cache count event of alert to check notify
         result['alert_name'] = alert_name
         result['alert_url'] = alert_url
@@ -349,7 +359,11 @@ def call_back(params):
         logger.exception(ex)
         return {"HasError": True, "Code": 0, "Message": ""}
     
-# if __name__ == "__main__":
+if __name__ == "__main__":
+#     s1 = set(['1', '2'])
+#     s1.add('1')
+#     for i in s1:
+#         print i
 #     l = [{
 #             "evtname": "pap1",
 #             "txid": 1,
@@ -384,8 +398,8 @@ def call_back(params):
 #     
 #     print l
 #
-#     from lunex.coordinator import settings
-#     CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
-#     list_send_key = RedisCache.get_keys('coor')
-#     for key in list_send_key:
-#         RedisCache.delete_by_key(key)
+    from lunex.coordinator import settings
+    CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
+    list_send_key = RedisCache.get_keys('coor')
+    for key in list_send_key:
+        RedisCache.delete_by_key(key)
