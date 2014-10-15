@@ -60,6 +60,7 @@ def do_make_alert(param):
         
         #if flag_alert == False:
         logger.debug('alert not existed in sytem.')
+        index = 0
         for item in body_param:
             item = simplejson.loads(item)
             data = {}
@@ -110,9 +111,10 @@ def do_make_alert(param):
                     
             if flagAll == True:
                 count = count + 1
-                
+            
             #add alert to cache
-            RedisCache.set_data(RedisCache.ALERT + event_name + ":" + uuid.__str__(), data)
+            RedisCache.set_data(RedisCache.ALERT + event_name + ":" + str(index) + ":" + uuid.__str__(), data)
+            index = index + 1
         
         #save cache count event of alert to check notify
         result['alert_name'] = alert_name
@@ -254,6 +256,7 @@ def do_make_send(param):
                                     fire_alert_url(alert_name, alert_url, count, list_event)
                                     
                                     #delete alert in cassandra
+                                    logger.debug('matched delete alert')
                                     _delete_alert_by_id(UUID(id_alert))
                                 RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
                                 
