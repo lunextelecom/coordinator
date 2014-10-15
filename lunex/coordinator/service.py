@@ -359,47 +359,9 @@ def call_back(params):
         logger.exception(ex)
         return {"HasError": True, "Code": 0, "Message": ""}
     
-if __name__ == "__main__":
-#     s1 = set(['1', '2'])
-#     s1.add('1')
-#     for i in s1:
-#         print i
-#     l = [{
-#             "evtname": "pap1",
-#             "txid": 1,
-#             "status": "SUCCESS"
-#             }, {
-#             "evtname": "pap1",
-#             "txid": 1,
-#             "status": "SUCCESS"
-#         }, {
-#             "evtname": "pap3",
-#             "txid": 4,
-#             "status": "SUCCESS"
-#         }, {
-#             "evtname": "pap3",
-#             "txid": 4,
-#             "status": "SUCCESS"
-#         }, {
-#             "evtname": "pap6",
-#             "txid": 4,
-#             "status": "SUCCESS"
-#         }]
-#     
-#     for n,i in enumerate(l):
-#         l[n] = simplejson.dumps(l[n])
-#      
-#     s = set([x for x in l if l.count(x) > 1])
-#     
-#     
-#     print s
-#     for item in s:
-#         l.remove(item)
-#     
-#     print l
-#
-    from lunex.coordinator import settings
-    CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
-    list_send_key = RedisCache.get_keys('coor')
-    for key in list_send_key:
-        RedisCache.delete_by_key(key)
+# if __name__ == "__main__":
+#     from lunex.coordinator import settings
+#     CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
+#     list_send_key = RedisCache.get_keys('coor')
+#     for key in list_send_key:
+#         RedisCache.delete_by_key(key)
