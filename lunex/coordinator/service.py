@@ -172,107 +172,108 @@ def do_make_send(param):
         #insert into send
         match_fields = simplejson.dumps(body_param)
         
-        #check existed in db
-#         flag_send = False
-#         list_send_key = RedisCache.get_keys(RedisCache.SEND + event_name)
-#         for key in list_send_key:
-#             send = RedisCache.get_data(key)
-#             send_match_field = send['match_fields']
-#             flag_send = compare_two_match_fields(simplejson.loads(match_fields), simplejson.loads(send_match_field))
-#             if flag_send == True:
-#                 break;
-        
-        #if flag_send == False:
-        logger.debug('send not existed in sytem.')
-        
-        #insert to cassandra
-        _insert_send(uuid, event_name, match_fields, sender, int(ttl))
-        logger.debug("insert send complete")
-        
-        #add to cache
-        result = {}
-        result['id'] = uuid.__str__()
-        result['event_name'] = event_name
-        result['match_fields'] = match_fields
-        data = RedisCache.get_data(RedisCache.SEND + event_name + ":" + uuid.__str__())
-        if not data:
-            if ttl:
-                RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
-                logger.info('cache send with timeout')
-            else:
-                RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
-                logger.info('cache send no time out')
+        if type(body_param) is dict:
+            #check existed in db
+    #         flag_send = False
+    #         list_send_key = RedisCache.get_keys(RedisCache.SEND + event_name)
+    #         for key in list_send_key:
+    #             send = RedisCache.get_data(key)
+    #             send_match_field = send['match_fields']
+    #             flag_send = compare_two_match_fields(simplejson.loads(match_fields), simplejson.loads(send_match_field))
+    #             if flag_send == True:
+    #                 break;
             
-        #get all send with endwith event_name from cache
-        list_key = RedisCache.get_keys(RedisCache.ALERT + event_name)
-        
-        if list_key:
-            #flagAll = False
-            #flagSendExistedMacth = False
-            for key in list_key:
-                alert = RedisCache.get_data(key)
-                alert_match_fields = alert['match_fields']
-                flagItem = compare_two_match_fields(simplejson.loads(match_fields), alert_match_fields)
-                if flagItem == True:
-                    if int(alert['status']) == AlertStatus.NOT_MATCH:
-                        alert['status'] = AlertStatus.MATCHED
-                        RedisCache.set_data(key, alert)
-                        match_key = key
-                        #flagAll = True
-                        
-                        #update status of alert
-                        #if flagAll == True:
-                        #add count
-                        alert_event = RedisCache.get_data(match_key)
-                        if alert_event:
-                            id_alert = alert_event['id']
-                            #update status alert cassanra
-                            _update_alert(AlertStatus.MATCHED, UUID(id_alert), event_name, simplejson.dumps(alert_event['match_fields']))
-                        
-                            alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
-                            if alert:
-                                count = int(alert['count']) + 1
-                                alert['count'] = count
-                                RedisCache.set_data(RedisCache.ALERT + id_alert, alert)
-                                if count == int(alert['total']):
-                                    logger.debug("fire alert url when recieved send")
-                                    alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
-                                    alert_name = alert['alert_name']
-                                    alert_url = alert['alert_url']
-                                    RedisCache.delete_by_key(RedisCache.ALERT + id_alert)
+            #if flag_send == False:
+            logger.debug('send not existed in sytem.')
+            
+            #insert to cassandra
+            _insert_send(uuid, event_name, match_fields, sender, int(ttl))
+            logger.debug("insert send complete")
+            
+            #add to cache
+            result = {}
+            result['id'] = uuid.__str__()
+            result['event_name'] = event_name
+            result['match_fields'] = match_fields
+            data = RedisCache.get_data(RedisCache.SEND + event_name + ":" + uuid.__str__())
+            if not data:
+                if ttl:
+                    RedisCache.setex_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result, int(ttl))
+                    logger.info('cache send with timeout')
+                else:
+                    RedisCache.set_data(RedisCache.SEND + event_name + ":" + uuid.__str__(), result)
+                    logger.info('cache send no time out')
+                
+            #get all send with endwith event_name from cache
+            list_key = RedisCache.get_keys(RedisCache.ALERT + event_name)
+            
+            if list_key:
+                #flagAll = False
+                #flagSendExistedMacth = False
+                for key in list_key:
+                    alert = RedisCache.get_data(key)
+                    alert_match_fields = alert['match_fields']
+                    flagItem = compare_two_match_fields(simplejson.loads(match_fields), alert_match_fields)
+                    if flagItem == True:
+                        if int(alert['status']) == AlertStatus.NOT_MATCH:
+                            alert['status'] = AlertStatus.MATCHED
+                            RedisCache.set_data(key, alert)
+                            match_key = key
+                            #flagAll = True
+                            
+                            #update status of alert
+                            #if flagAll == True:
+                            #add count
+                            alert_event = RedisCache.get_data(match_key)
+                            if alert_event:
+                                id_alert = alert_event['id']
+                                #update status alert cassanra
+                                _update_alert(AlertStatus.MATCHED, UUID(id_alert), event_name, simplejson.dumps(alert_event['match_fields']))
+                            
+                                alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
+                                if alert:
+                                    count = int(alert['count']) + 1
+                                    alert['count'] = count
+                                    RedisCache.set_data(RedisCache.ALERT + id_alert, alert)
+                                    if count == int(alert['total']):
+                                        logger.debug("fire alert url when recieved send")
+                                        alert = RedisCache.get_data(RedisCache.ALERT + id_alert)
+                                        alert_name = alert['alert_name']
+                                        alert_url = alert['alert_url']
+                                        RedisCache.delete_by_key(RedisCache.ALERT + id_alert)
+                                        
+                                        #id_alert
+                                        #delete alert in redis cache
+                                        keys_delete = RedisCache.get_keys_begin_with(id_alert)
+                                        list_event = []
+                                        for key in keys_delete:
+                                            alert = RedisCache.get_data(key)
+                                            data = alert['match_fields']
+                                            data['evtname'] = alert['event_name']
+                                            list_event.append(data)
+                                            RedisCache.delete_by_key(key)
+                                        
+                                        #fire alert_url
+                                        fire_alert_url(alert_name, alert_url, count, list_event)
+                                        
+                                        #delete alert in cassandra
+                                        logger.debug('matched delete alert')
+                                        _delete_alert_by_id(UUID(id_alert))
+                                    RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
                                     
-                                    #id_alert
-                                    #delete alert in redis cache
-                                    keys_delete = RedisCache.get_keys_begin_with(id_alert)
-                                    list_event = []
-                                    for key in keys_delete:
-                                        alert = RedisCache.get_data(key)
-                                        data = alert['match_fields']
-                                        data['evtname'] = alert['event_name']
-                                        list_event.append(data)
-                                        RedisCache.delete_by_key(key)
-                                    
-                                    #fire alert_url
-                                    fire_alert_url(alert_name, alert_url, count, list_event)
-                                    
-                                    #delete alert in cassandra
-                                    logger.debug('matched delete alert')
-                                    _delete_alert_by_id(UUID(id_alert))
-                                RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
-                                
-                                #delete send in cassandra
-                                _delete_send_by_id(uuid)
-                    else:
-                        logger.debug('existed matched will removed')
-                        RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
-                        _delete_send_by_id(uuid)
-                        #else:
-                            #flagAll = False
-                            #flagSendExistedMacth = True
-                        #break
-                #if flagSendExistedMacth == False:
-        #else:
-            #logger.debug('send already existed system')
+                                    #delete send in cassandra
+                                    _delete_send_by_id(uuid)
+                        else:
+                            logger.debug('existed matched will removed')
+                            RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
+                            _delete_send_by_id(uuid)
+                            #else:
+                                #flagAll = False
+                                #flagSendExistedMacth = True
+                            #break
+                    #if flagSendExistedMacth == False:
+            #else:
+                #logger.debug('send already existed system')
             
     except Exception, ex:
         logger.exception(ex)
@@ -348,7 +349,7 @@ def call_back(params):
         logger.exception(ex)
         return {"HasError": True, "Code": 0, "Message": ""}
     
-if __name__ == "__main__":
+# if __name__ == "__main__":
 #     l = [{
 #             "evtname": "pap1",
 #             "txid": 1,
@@ -383,8 +384,8 @@ if __name__ == "__main__":
 #     
 #     print l
 #
-    from lunex.coordinator import settings
-    CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
-    list_send_key = RedisCache.get_keys('coor')
-    for key in list_send_key:
-        RedisCache.delete_by_key(key)
+#     from lunex.coordinator import settings
+#     CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
+#     list_send_key = RedisCache.get_keys('coor')
+#     for key in list_send_key:
+#         RedisCache.delete_by_key(key)
