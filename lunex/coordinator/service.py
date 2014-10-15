@@ -259,6 +259,10 @@ def do_make_send(param):
                                 
                                 #delete send in cassandra
                                 _delete_send_by_id(uuid)
+                    else:
+                        logger.debug('existed matched will removed')
+                        RedisCache.delete_by_key(RedisCache.SEND + event_name + ":" + uuid.__str__())
+                        _delete_send_by_id(uuid)
                         #else:
                             #flagAll = False
                             #flagSendExistedMacth = True
@@ -341,7 +345,7 @@ def call_back(params):
         logger.exception(ex)
         return {"HasError": True, "Code": 0, "Message": ""}
     
-# if __name__ == "__main__":
+if __name__ == "__main__":
 #     l = [{
 #             "evtname": "pap1",
 #             "txid": 1,
@@ -376,8 +380,8 @@ def call_back(params):
 #     
 #     print l
 #
-#     from lunex.coordinator import settings
-#     CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
-#     list_send_key = RedisCache.get_keys('coor')
-#     for key in list_send_key:
-#         RedisCache.delete_by_key(key)
+    from lunex.coordinator import settings
+    CacheService.__init__(settings.CACHE_SERVER['Host'], settings.CACHE_SERVER['Port'])
+    list_send_key = RedisCache.get_keys('coor')
+    for key in list_send_key:
+        RedisCache.delete_by_key(key)
